@@ -54,9 +54,6 @@ const validateRegistrationId = (id: string): { valid: boolean; role: UserRole | 
   };
 };
 
-// Registered users storage (persisted in state, would be database in production)
-const [registeredUsers, setRegisteredUsers] = useState<{ [key: string]: { password: string; user: User } }>(mockUsers);
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [registeredUsers, setRegisteredUsers] = useState<{ [key: string]: { password: string; user: User } }>(mockUsers);
