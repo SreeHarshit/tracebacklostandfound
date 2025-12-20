@@ -71,6 +71,9 @@ export function LoginForm({ onSignUpClick }: LoginFormProps) {
               <p className="text-xs text-muted-foreground">
                 Student: 10 digits • Staff: 6 digits • Security: viz + 4 digits
               </p>
+              <p className="text-xs text-primary font-medium">
+                Only registered users can log in.
+              </p>
             </div>
 
             <div className="space-y-2">

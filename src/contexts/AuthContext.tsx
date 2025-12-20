@@ -54,8 +54,12 @@ const validateRegistrationId = (id: string): { valid: boolean; role: UserRole | 
   };
 };
 
+// Registered users storage (persisted in state, would be database in production)
+const [registeredUsers, setRegisteredUsers] = useState<{ [key: string]: { password: string; user: User } }>(mockUsers);
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [registeredUsers, setRegisteredUsers] = useState<{ [key: string]: { password: string; user: User } }>(mockUsers);
 
   const login = (registrationId: string, password: string) => {
     const validation = validateRegistrationId(registrationId);
@@ -64,25 +68,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: validation.error };
     }
 
-    const mockUser = mockUsers[registrationId.toLowerCase()];
-    if (mockUser && mockUser.password === password) {
-      setUser(mockUser.user);
-      return { success: true };
+    const registeredUser = registeredUsers[registrationId.toLowerCase()];
+    
+    // Check if account exists
+    if (!registeredUser) {
+      return { success: false, error: 'Account not found. Please create an account first.' };
     }
 
-    // For demo: create user on the fly if not found
-    if (password.length >= 6) {
-      const newUser: User = {
-        id: Date.now().toString(),
-        fullName: 'Demo User',
-        registrationId: registrationId,
-        role: validation.role!
-      };
-      setUser(newUser);
-      return { success: true };
+    // Validate password
+    if (registeredUser.password !== password) {
+      return { success: false, error: 'Incorrect password. Please try again.' };
     }
 
-    return { success: false, error: 'Invalid credentials. Password must be at least 6 characters.' };
+    setUser(registeredUser.user);
+    return { success: true };
   };
 
   const signup = (fullName: string, registrationId: string, password: string) => {
@@ -95,6 +94,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (password.length < 6) {
       return { success: false, error: 'Password must be at least 6 characters.' };
     }
+
+    // Check if account already exists
+    if (registeredUsers[registrationId.toLowerCase()]) {
+      return { success: false, error: 'An account with this Registration ID already exists. Please log in.' };
+    }
+
+    // Create new user account
+    const newUser: User = {
+      id: Date.now().toString(),
+      fullName: fullName.trim(),
+      registrationId: registrationId,
+      role: validation.role!
+    };
+
+    setRegisteredUsers(prev => ({
+      ...prev,
+      [registrationId.toLowerCase()]: {
+        password: password,
+        user: newUser
+      }
+    }));
 
     return { success: true };
   };
